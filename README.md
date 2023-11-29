@@ -1,2 +1,7 @@
-# lenet-5-cpp
-LeNet-5 cpp implementation
+# Lenet-5 cpp
+Lenet with cpp implementation
+
+## Tech stack
+- C/C++
+- Bazel
+- Eigen
