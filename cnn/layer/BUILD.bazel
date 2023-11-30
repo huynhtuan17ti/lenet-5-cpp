@@ -1,0 +1,10 @@
+cc_library(
+  name = "cnn_layer",
+  hdrs = glob(["*.h"]),
+  srcs = glob(["*.cpp"]),
+  deps = [
+    "@eigen",
+    "//cnn:cnn_basic",
+  ],
+  visibility = ["//visibility:public"],
+)
