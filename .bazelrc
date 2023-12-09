@@ -1,0 +1,7 @@
+common --show_timestamps
+common --color=yes
+
+build --verbose_failures
+
+build --spawn_strategy=local
+build --strategy=Genrule=local

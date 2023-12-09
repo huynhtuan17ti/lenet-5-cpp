@@ -34,3 +34,7 @@
 # Bazel
 bazel-*
 externel/*
+
+# Model/Data
+data/*
+weights/*

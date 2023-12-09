@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ostream>
 #include <vector>
 #include "cnn/layer.h"
 
@@ -56,4 +57,13 @@ class Conv : public Layer {
   std::vector<float> get_parameters() const;
   std::vector<float> get_derivatives() const;
   void set_parameters(const std::vector<float>& param);
+
+  void serialize(std::ostream& stream) const {
+    stream.write(reinterpret_cast<const char*>(weight.data()), weight.rows() * weight.cols() * sizeof(Matrix::Scalar));    
+    stream.write(reinterpret_cast<const char*>(bias.data()), bias.rows() * bias.cols() * sizeof(Matrix::Scalar)); 
+  }
+  void deserialize(std::istream& stream) {
+    stream.read(reinterpret_cast<char*>(weight.data()), weight.rows() * weight.cols() * sizeof(Matrix::Scalar)); 
+    stream.read(reinterpret_cast<char*>(bias.data()), bias.rows() * bias.cols() * sizeof(Matrix::Scalar)); 
+  }
 };

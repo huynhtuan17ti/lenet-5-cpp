@@ -1,7 +1,55 @@
+cc_library(
+  name = "header",
+  hdrs = ["lenet5.h"],
+  deps = [
+    "//cnn:cnn",
+  ]
+)
+
 cc_binary(
   name = "demo",
   srcs = ["demo.cpp"],
   deps = [
-    "//cnn:cnn"
+    "//cnn:cnn",
+    ":header",
   ]
 )
+
+filegroup(
+  name = "fashion_mnist_data",
+  srcs = glob(["data/**"]),
+)
+
+filegroup(
+  name = "lenet5_weight",
+  srcs = glob(["weights/**"]),
+)
+
+cc_binary(
+  name = "train",
+  srcs = ["train.cpp"],
+  data = [":fashion_mnist_data"],
+  deps = [
+    "//cnn:cnn",
+    ":header",
+  ]
+)
+
+cc_binary(
+  name = "inference",
+  srcs = ["inference.cpp"],
+  data = [":fashion_mnist_data", ":lenet5_weight"],
+  deps = [
+    "//cnn:cnn",
+    ":header",
+  ]
+)
+
+
+#genrule(
+  #name = "test_save",
+  #outs = ["lenet5_weight"],
+  #cmd = "$(location :demo) > $@",
+  #executable = True,
+  #tools = [":demo"],
+#)

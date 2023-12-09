@@ -20,6 +20,10 @@ void Conv::init() {
 // im2col, used for bottom
 // image size: Vector (height_in * width_in * channel_in)
 // data_col size: Matrix (hw_out, hw_kernel * channel_in)
+//
+// this function actually maps:
+// - each pixel in hw_out ---- required pixels in input image needing for kernel filtering
+// - total hw_kernel * channel_in input pixels for one pixel in output matrix
 void Conv::im2col(const Vector& image, Matrix& data_col) {
   int hw_in = height_in * width_in;
   int hw_kernel = height_kernel * width_kernel;
@@ -53,12 +57,15 @@ void Conv::forward(const Matrix& bottom) {
   int n_sample = bottom.cols();
   top.resize(height_out * width_out * channel_out, n_sample);
   data_cols.resize(n_sample);
-  for (int i = 0; i < n_sample; i ++) {
+  for (int i = 0; i < n_sample; i++) {
     // im2col
     Matrix data_col;
     im2col(bottom.col(i), data_col);
     data_cols[i] = data_col;
     // conv by product
+    // data_col has shape (hw_out, hw_kernel * channel_in)
+    // weight has shape (hw_kernel * channel_in, channel_out)
+    // therefore, data_col * weight = result, which has shape (hw_out, channel_out)
     Matrix result = data_col * weight;  // result: (hw_out, channel_out)
     result.rowwise() += bias.transpose();
     top.col(i) = Eigen::Map<Vector>(result.data(), result.size());

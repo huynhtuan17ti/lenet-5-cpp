@@ -1,10 +1,36 @@
 #include "network.h"
 
+void Network::save(const std::string& filename) {
+  std::ofstream file(filename, std::ios::binary);
+  if (file.is_open()) {
+    for (size_t i = 0; i < layers.size(); i++) {
+      layers[i]->serialize(file);
+    }
+    file.close();
+    std::cout << "Object saved to binary file: " << filename << std::endl;
+  } else {
+    std::cerr << "Unable to open file: " << filename << std::endl;
+  }
+}
+
+void Network::load(const std::string& filename) {
+  std::ifstream file(filename, std::ios::binary);
+  if (file.is_open()) {
+    for (size_t i = 0; i < layers.size(); i++) {
+      layers[i]->deserialize(file);
+    }
+    file.close();
+    std::cout << "Object loaded to binary file: " << filename << std::endl;
+  } else {
+    std::cerr << "Unable to open file: " << filename << std::endl;
+  }
+}
+
 void Network::forward(const Matrix& input) {
   if (layers.empty())
     return;
   layers[0]->forward(input);
-  for (int i = 1; i < layers.size(); i++) {
+  for (size_t i = 1; i < layers.size(); i++) {
     layers[i]->forward(layers[i-1]->output());
   }
 }

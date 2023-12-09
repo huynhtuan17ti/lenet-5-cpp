@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <vector>
+#include <fstream>
 #include "layer.h"
 #include "loss.h"
 #include "optimizer.h"
@@ -22,6 +23,9 @@ class Network {
       delete loss;
     }
   }
+
+  void save(const std::string& filename);
+  void load(const std::string& filename);
 
   void add_layer(Layer* layer) { layers.push_back(layer); }
   void add_loss(Loss* loss_in) { loss = loss_in; }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Eigen/Core>
+#include <ostream>
 #include <vector>
 #include "optimizer.h"
 #include "utils.h"
@@ -26,4 +27,12 @@ class Layer {
     return std::vector<float>();
   }
   virtual void set_parameters(const std::vector<float>& param) {}
+
+  // read/write binary
+  virtual void serialize(std::ostream& stream) const {
+    return;
+  }
+  virtual void deserialize(std::istream& stream) {
+    return;
+  }
 };
