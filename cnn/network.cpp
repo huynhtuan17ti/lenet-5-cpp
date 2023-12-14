@@ -20,7 +20,7 @@ void Network::load(const std::string& filename) {
       layers[i]->deserialize(file);
     }
     file.close();
-    std::cout << "Object loaded to binary file: " << filename << std::endl;
+    std::cout << "Object loaded from binary file: " << filename << std::endl;
   } else {
     std::cerr << "Unable to open file: " << filename << std::endl;
   }

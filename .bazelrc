@@ -5,3 +5,5 @@ build --verbose_failures
 
 build --spawn_strategy=local
 build --strategy=Genrule=local
+
+build:cuda --cxxopt=-DUSE_CUDA=1

@@ -1,3 +1,4 @@
+#include "cnn/utils.h"
 #include "conv.h"
 #include <math.h>
 #include <iostream>
@@ -13,8 +14,11 @@ void Conv::init() {
   grad_bias.resize(channel_out);
   set_normal_random(weight.data(), weight.size(), 0, 0.01);
   set_normal_random(bias.data(), bias.size(), 0, 0.01);
-  //std::cout << weight.colwise().sum() << std::endl;
-  //std::cout << weight.colwise().sum() + bias.transpose() << std::endl;
+
+  cuda_conv.SetInMatrix(channel_in, width_in, height_in);
+  cuda_conv.SetOutMatrix(channel_out, width_out, height_out);
+  // assume width kernel = height kernel
+  cuda_conv.SetKernel(width_kernel);
 }
 
 // im2col, used for bottom
@@ -53,11 +57,15 @@ void Conv::im2col(const Vector& image, Matrix& data_col) {
   }
 }
 
+
 void Conv::forward(const Matrix& bottom) {
   int n_sample = bottom.cols();
   top.resize(height_out * width_out * channel_out, n_sample);
   data_cols.resize(n_sample);
   for (int i = 0; i < n_sample; i++) {
+#ifdef USE_CUDA
+    cuda_conv.Launch(bottom.col(i).data(), weight.data(), top.col(i).data());
+#else
     // im2col
     Matrix data_col;
     im2col(bottom.col(i), data_col);
@@ -69,6 +77,7 @@ void Conv::forward(const Matrix& bottom) {
     Matrix result = data_col * weight;  // result: (hw_out, channel_out)
     result.rowwise() += bias.transpose();
     top.col(i) = Eigen::Map<Vector>(result.data(), result.size());
+#endif
   }
 }
 

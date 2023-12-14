@@ -3,6 +3,7 @@
 #include <ostream>
 #include <vector>
 #include "cnn/layer.h"
+#include "cnn/layer/cuda_conv_utils.h"
 
 class Conv : public Layer {
  private:
@@ -26,6 +27,8 @@ class Conv : public Layer {
   Vector bias;    // bias param, size = channel_out
   Matrix grad_weight;  // gradient w.r.t weight
   Vector grad_bias;    // gradient w.r.t bias
+
+  CudaConv cuda_conv;
 
   std::vector<Matrix> data_cols;
 
