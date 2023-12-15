@@ -28,6 +28,11 @@ class Conv : public Layer {
   Matrix grad_weight;  // gradient w.r.t weight
   Vector grad_bias;    // gradient w.r.t bias
 
+#ifdef USE_CUDA
+  bool use_cuda{true};
+#else
+  bool use_cuda{false};
+#endif
   CudaConv cuda_conv;
 
   std::vector<Matrix> data_cols;
@@ -61,6 +66,21 @@ class Conv : public Layer {
   std::vector<float> get_derivatives() const;
   void set_parameters(const std::vector<float>& param);
 
+  // only use in testing
+  void set_weight(const Matrix& set_weight) {
+    weight = set_weight;
+  }
+  void set_bias(const Vector& set_bias) {
+    bias = set_bias;
+  }
+  void non_cuda_forward(const Matrix& bottom) {
+    use_cuda = false;
+    forward(bottom);
+    use_cuda = true;
+  }
+
+  // load and save
+  // TODO: move the implement to source file
   void serialize(std::ostream& stream) const {
     stream.write(reinterpret_cast<const char*>(weight.data()), weight.rows() * weight.cols() * sizeof(Matrix::Scalar));    
     stream.write(reinterpret_cast<const char*>(bias.data()), bias.rows() * bias.cols() * sizeof(Matrix::Scalar)); 
@@ -70,3 +90,5 @@ class Conv : public Layer {
     stream.read(reinterpret_cast<char*>(bias.data()), bias.rows() * bias.cols() * sizeof(Matrix::Scalar)); 
   }
 };
+
+

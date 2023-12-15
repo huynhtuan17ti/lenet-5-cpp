@@ -63,21 +63,27 @@ void Conv::forward(const Matrix& bottom) {
   top.resize(height_out * width_out * channel_out, n_sample);
   data_cols.resize(n_sample);
   for (int i = 0; i < n_sample; i++) {
-#ifdef USE_CUDA
-    cuda_conv.Launch(bottom.col(i).data(), weight.data(), top.col(i).data());
-#else
-    // im2col
-    Matrix data_col;
-    im2col(bottom.col(i), data_col);
-    data_cols[i] = data_col;
-    // conv by product
-    // data_col has shape (hw_out, hw_kernel * channel_in)
-    // weight has shape (hw_kernel * channel_in, channel_out)
-    // therefore, data_col * weight = result, which has shape (hw_out, channel_out)
-    Matrix result = data_col * weight;  // result: (hw_out, channel_out)
-    result.rowwise() += bias.transpose();
-    top.col(i) = Eigen::Map<Vector>(result.data(), result.size());
-#endif
+    if (use_cuda) {
+      Matrix result;
+      result.resize(height_out * width_out, channel_out);
+      cuda_conv.Launch(bottom.col(i).data(), weight.data(), result.data());
+      std::cerr << "cuda: " << result.sum() << '\n';
+      result.rowwise() += bias.transpose();
+      top.col(i) = Eigen::Map<Vector>(result.data(), result.size());
+    } else {
+      // im2col
+      Matrix data_col;
+      im2col(bottom.col(i), data_col);
+      data_cols[i] = data_col;
+      // conv by product
+      // data_col has shape (hw_out, hw_kernel * channel_in)
+      // weight has shape (hw_kernel * channel_in, channel_out)
+      // therefore, data_col * weight = result, which has shape (hw_out, channel_out)
+      Matrix result = data_col * weight;  // result: (hw_out, channel_out)
+      std::cerr << "cpu: " << result.sum() << '\n';
+      result.rowwise() += bias.transpose();
+      top.col(i) = Eigen::Map<Vector>(result.data(), result.size());
+    }
   }
 }
 

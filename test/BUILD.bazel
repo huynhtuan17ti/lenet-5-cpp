@@ -1,0 +1,8 @@
+cc_test(
+  name = "test",
+  srcs = glob(["*.cpp"]),
+  deps = [
+    "@catch2//:catch2_main",
+    "//cnn:cnn",
+  ]
+)

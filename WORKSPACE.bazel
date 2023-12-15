@@ -7,6 +7,12 @@ http_archive(
     strip_prefix="eigen-3.3.4"
 )
 
+http_archive(
+    name = "catch2",
+    urls = ["https://github.com/catchorg/Catch2/archive/refs/tags/v3.5.0.tar.gz"],
+    strip_prefix = "Catch2-3.5.0",
+)
+
 # cuda rules
 # https://github.com/bazel-contrib/rules_cuda
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
