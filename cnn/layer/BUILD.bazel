@@ -2,8 +2,8 @@ load("@rules_cuda//cuda:defs.bzl", "cuda_library")
 
 cuda_library(
   name = "cuda_conv",
-  hdrs = ["cuda_conv_utils.h"],
-  srcs = ["cuda_conv_utils.cu"],
+  hdrs = ["cuda_conv.h"],
+  srcs = ["cuda_conv.cu"],
   deps = [
     "//cnn:cnn_basic",
     "@eigen",
@@ -12,7 +12,7 @@ cuda_library(
 
 cc_library(
   name = "cnn_layer",
-  hdrs = glob(["*.h"], exclude = ["cuda_conv_utils.h"]),
+  hdrs = glob(["*.h"], exclude = ["cuda_conv.h"]),
   srcs = glob(["*.cpp"]),
   deps = [
     ":cuda_conv",

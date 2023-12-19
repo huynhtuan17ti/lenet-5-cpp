@@ -1,6 +1,6 @@
 cc_library(
   name = "header",
-  hdrs = ["lenet5.h"],
+  hdrs = ["lenet5.h", "timer.h"],
   deps = [
     "//cnn:cnn",
   ]

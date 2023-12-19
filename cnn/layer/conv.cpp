@@ -69,7 +69,7 @@ void Conv::forward(const Matrix& bottom) {
     if (use_cuda) {
       Matrix result;
       result.resize(height_out * width_out, channel_out);
-      cuda_conv.Launch(bottom.col(i).data(), weight.data(), result.data());
+      cuda_conv.Launch(bottom.col(i).data(), result.data());
       //std::cerr << "cuda: " << result.sum() << '\n';
       //std::cerr << result(0) << '\n';
       result.rowwise() += bias.transpose();

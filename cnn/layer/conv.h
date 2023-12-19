@@ -3,7 +3,7 @@
 #include <ostream>
 #include <vector>
 #include "cnn/layer.h"
-#include "cnn/layer/cuda_conv_utils.h"
+#include "cnn/layer/cuda_conv.h"
 
 class Conv : public Layer {
  private:
@@ -69,6 +69,7 @@ class Conv : public Layer {
   // only use in testing
   void set_weight(const Matrix& set_weight) {
     weight = set_weight;
+    cuda_conv.InitKernelParams(weight.data());
   }
   void set_bias(const Vector& set_bias) {
     bias = set_bias;
@@ -88,6 +89,7 @@ class Conv : public Layer {
   void deserialize(std::istream& stream) {
     stream.read(reinterpret_cast<char*>(weight.data()), weight.rows() * weight.cols() * sizeof(Matrix::Scalar)); 
     stream.read(reinterpret_cast<char*>(bias.data()), bias.rows() * bias.cols() * sizeof(Matrix::Scalar)); 
+    cuda_conv.InitKernelParams(weight.data());
   }
 };
 
