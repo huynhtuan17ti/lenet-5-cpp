@@ -8,7 +8,7 @@ TEST_CASE("Cuda conv layer", "[layer]") {
   // Matrix weight, shape = (channel_in*h_kernel*w_kernel, channel_out)
   // Vector bias, size = channel_out
 
-  size_t channel_in = 1, height_in = 28, width_in = 28;
+  size_t channel_in = 3, height_in = 28, width_in = 28;
   size_t height_kernel = 5, width_kernel = 5;
   size_t channel_out = 6;
 
@@ -20,6 +20,20 @@ TEST_CASE("Cuda conv layer", "[layer]") {
   conv.set_bias(bias);
 
   Matrix input = Matrix::Random(channel_in * height_in * width_in, 1);
+  //{
+    //auto tmp = input;
+    //tmp.resize(28, 28);
+    //Matrix x = tmp.block(0, 0, 5, 5);
+    //float res = 0;
+    //for(size_t i = 0; i < x.size(); ++i) {
+      //std::cerr << weight(i, 0) << " " << x(i) << '\n';
+      //res += x(i) * weight(i, 0);
+    //}
+    //res += bias(0);
+    //std::cerr << res << '\n';
+  //}
+
+
   conv.forward(input);
   Matrix cuda_output = conv.output();
 
@@ -27,8 +41,6 @@ TEST_CASE("Cuda conv layer", "[layer]") {
   Matrix output = conv.output();
 
   auto diff = (cuda_output - output).sum();
-  std::cerr << cuda_output.sum() << '\n';
-  std::cerr << output.sum() << '\n';
   REQUIRE(abs(diff) < 0.001);
 #endif
 }

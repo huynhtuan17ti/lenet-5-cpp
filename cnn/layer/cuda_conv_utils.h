@@ -12,7 +12,7 @@ class CudaConv {
 
   void SetOutMatrix(size_t channel_out, size_t width_out, size_t height_out);
 
-  void Launch(const float* in_matrix, const float* kernel, float* out_matrix);
+  void Launch(const float* in_matrix, float* kernel, float* out_matrix);
 
  private:
   size_t channel_in_, width_in_, height_in_; 

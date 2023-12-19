@@ -50,13 +50,16 @@ void Conv::im2col(const Vector& image, Matrix& data_col) {
         else {
           //int pick_idx = start_idx + (j / width_kernel) * width_in + j % width_kernel;
           int pick_idx = cur_row * width_in + cur_col;
+          //if (i == 0) {
+            //std::cerr << "debug cpu: " << j << " -- " << c * hw_kernel + j << " -> " << hw_in * c + pick_idx << '\n';
+            //std::cerr << "channel: " << c << '\n';
+          //}
           data_col(i, c * hw_kernel + j) = map(pick_idx);  // pick which pixel
         }
       }
     }
   }
 }
-
 
 void Conv::forward(const Matrix& bottom) {
   int n_sample = bottom.cols();
@@ -67,7 +70,8 @@ void Conv::forward(const Matrix& bottom) {
       Matrix result;
       result.resize(height_out * width_out, channel_out);
       cuda_conv.Launch(bottom.col(i).data(), weight.data(), result.data());
-      std::cerr << "cuda: " << result.sum() << '\n';
+      //std::cerr << "cuda: " << result.sum() << '\n';
+      //std::cerr << result(0) << '\n';
       result.rowwise() += bias.transpose();
       top.col(i) = Eigen::Map<Vector>(result.data(), result.size());
     } else {
@@ -80,7 +84,8 @@ void Conv::forward(const Matrix& bottom) {
       // weight has shape (hw_kernel * channel_in, channel_out)
       // therefore, data_col * weight = result, which has shape (hw_out, channel_out)
       Matrix result = data_col * weight;  // result: (hw_out, channel_out)
-      std::cerr << "cpu: " << result.sum() << '\n';
+      //std::cerr << "cpu: " << result.sum() << '\n';
+      //std::cerr << result(0) << '\n';
       result.rowwise() += bias.transpose();
       top.col(i) = Eigen::Map<Vector>(result.data(), result.size());
     }

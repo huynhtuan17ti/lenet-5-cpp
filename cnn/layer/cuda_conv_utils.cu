@@ -21,23 +21,30 @@ __global__ void conv_kernel(float *in_matrix, size_t in_channel, size_t in_width
 	size_t out_row = blockIdx.y * blockDim.y + threadIdx.y;
 	size_t out_col = blockIdx.x * blockDim.x + threadIdx.x;
 
+  const size_t INPUT_HW = in_width * in_height;
+  const size_t KERNEL_HW = kernel_size * kernel_size;
+  const size_t KERNEL_HWC = in_channel * KERNEL_HW;
+  const size_t OUTPUT_HW = out_width * out_height;
+
 	if (out_row < out_height && out_col < out_width) {
 		size_t out_id = out_row * out_width + out_col;
-    for(size_t in_row = out_row; in_row < out_row + kernel_size; ++in_row)
-      for(size_t in_col = out_col; in_col < out_col + kernel_size; ++in_col) {
-        size_t kernel_row = in_row - out_row, kernel_col = in_col - out_col;
-        size_t kernel_id = kernel_row * kernel_size + kernel_col;
+    for(size_t out_channel_id = 0; out_channel_id < out_channel; ++out_channel_id) {
+      float res = 0;
+      for(size_t in_row = out_row; in_row < out_row + kernel_size; ++in_row) {
+        for(size_t in_col = out_col; in_col < out_col + kernel_size; ++in_col) {
+          size_t kernel_row = in_row - out_row, kernel_col = in_col - out_col;
+          size_t kernel_id = kernel_row * kernel_size + kernel_col;
 
-        size_t in_id = in_row * in_width + in_col; 
-        for(size_t out_channel_id = 0; out_channel_id < out_channel; ++out_channel_id) {
-          float res = 0;
+          size_t in_id = in_row * in_width + in_col; 
           for(int in_channel_id = 0; in_channel_id < in_channel; ++in_channel_id) {
-            float kernel_val = kernel[out_channel * (in_channel * kernel_id + in_channel_id) + out_channel_id];
-            res += kernel_val * in_matrix[in_channel * in_id + in_channel_id];
+            size_t actual_kernel_id = out_channel_id * KERNEL_HWC + (in_channel_id * KERNEL_HW + kernel_id);
+            float kernel_val = kernel[actual_kernel_id];
+            res += kernel_val * in_matrix[in_channel_id * INPUT_HW + in_id];
           }
-          out_matrix[out_channel * out_id + out_channel_id] = static_cast<uint8_t>(res);
         }
       }
+      out_matrix[out_channel_id * OUTPUT_HW + out_id] = res;
+    }
 	}
 }
 
@@ -57,7 +64,7 @@ void CudaConv::SetOutMatrix(size_t channel_out, size_t width_out, size_t height_
   height_out_ = height_out;
 }
 
-void CudaConv::Launch(const float *in_matrix, const float *kernel, float *out_matrix) {
+void CudaConv::Launch(const float *in_matrix, float *kernel, float *out_matrix) {
   float *d_kernel;
   size_t kernel_byte_size = channel_in_ * channel_out_ * kernel_size_ * kernel_size_ * sizeof(float);
   // allocate memory
@@ -79,7 +86,7 @@ void CudaConv::Launch(const float *in_matrix, const float *kernel, float *out_ma
 
   // call kernel
   dim3 grid_size((width_out_ - 1) / BLOCK_SIZE.x + 1, (height_out_ - 1) / BLOCK_SIZE.y + 1);
-  conv_kernel<<<grid_size, BLOCK_SIZE>>>(d_in, channel_in_, width_in_, height_out_,
+  conv_kernel<<<grid_size, BLOCK_SIZE>>>(d_in, channel_in_, width_in_, height_in_,
                                          d_kernel, kernel_size_,
                                          d_out, channel_out_, width_out_, height_out_);
 
