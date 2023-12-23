@@ -19,5 +19,10 @@ cc_library(
     "@eigen",
     "//cnn:cnn_basic",
   ],
+  local_defines = select({
+    "//:conv_v3" : ["CONV3"],
+    "//:conv_v2" : ["CONV2"],
+  }),
   visibility = ["//visibility:public"],
 )
+

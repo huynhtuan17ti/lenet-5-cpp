@@ -24,8 +24,8 @@ class MaxPooling : public Layer {
   void init();
 
  public:
-  MaxPooling(int channel_in, int height_in, int width_in, int height_pool,
-             int width_pool, int stride = 1)
+  MaxPooling(int channel_in, int height_in, int width_in, int height_pool, int width_pool,
+             int stride = 1)
       : dim_in(channel_in * height_in * width_in),
         channel_in(channel_in),
         height_in(height_in),

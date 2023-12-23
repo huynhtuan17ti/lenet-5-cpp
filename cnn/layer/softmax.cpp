@@ -12,6 +12,5 @@ void Softmax::backward(const Matrix& bottom, const Matrix& grad_top) {
   // = \sum_(i!=j){ d(L)/d(a_j) * d(a_j)/d(z_i) } + d(L)/d(a_i) * d(a_i)/d(z_i)
   // = a_i * ( d(L)/d(a_i) - \sum{a_j * d(L)/d(a_j)} )
   RowVector temp_sum = top.cwiseProduct(grad_top).colwise().sum();
-  grad_bottom.array() = top.array().cwiseProduct(grad_top.array().rowwise()
-                                                 - temp_sum);
+  grad_bottom.array() = top.array().cwiseProduct(grad_top.array().rowwise() - temp_sum);
 }

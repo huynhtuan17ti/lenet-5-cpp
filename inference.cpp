@@ -4,9 +4,9 @@
  * */
 #include <Eigen/Dense>
 
-#include "cnn/mnist.h"
 #include "cnn/loss.h"
 #include "cnn/loss/cross_entropy_loss.h"
+#include "cnn/mnist.h"
 #include "cnn/network.h"
 #include "cnn/optimizer/sgd.h"
 #include "cnn/utils.h"

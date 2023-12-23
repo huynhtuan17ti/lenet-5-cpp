@@ -3,9 +3,9 @@
  * */
 #include <Eigen/Dense>
 
-#include "cnn/mnist.h"
 #include "cnn/loss.h"
 #include "cnn/loss/cross_entropy_loss.h"
+#include "cnn/mnist.h"
 #include "cnn/network.h"
 #include "cnn/optimizer/sgd.h"
 #include "cnn/utils.h"
@@ -31,14 +31,14 @@ int main() {
   const int n_epoch = 5;
   const int batch_size = 128;
 
-  for (int epoch = 0; epoch < n_epoch; epoch ++) {
+  for (int epoch = 0; epoch < n_epoch; epoch++) {
     shuffle_data(dataset.train_data, dataset.train_labels);
     for (int start_idx = 0; start_idx < n_train; start_idx += batch_size) {
       int ith_batch = start_idx / batch_size;
-      Matrix x_batch = dataset.train_data.block(0, start_idx, dim_in,
-                                    std::min(batch_size, n_train - start_idx));
-      Matrix label_batch = dataset.train_labels.block(0, start_idx, 1,
-                                    std::min(batch_size, n_train - start_idx));
+      Matrix x_batch =
+          dataset.train_data.block(0, start_idx, dim_in, std::min(batch_size, n_train - start_idx));
+      Matrix label_batch =
+          dataset.train_labels.block(0, start_idx, 1, std::min(batch_size, n_train - start_idx));
       Matrix target_batch = one_hot_encode(label_batch, 10);
       if (false && ith_batch % 10 == 1) {
         std::cout << ith_batch << "-th grad: " << std::endl;
@@ -48,8 +48,7 @@ int main() {
       lenet5.backward(x_batch, target_batch);
       // display
       if (ith_batch % 50 == 0) {
-        std::cout << ith_batch << "-th batch, loss: " << lenet5.get_loss()
-        << std::endl;
+        std::cout << ith_batch << "-th batch, loss: " << lenet5.get_loss() << std::endl;
       }
       // optimize
       lenet5.update(opt);

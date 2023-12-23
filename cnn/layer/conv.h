@@ -23,8 +23,8 @@ class Conv : public Layer {
   int height_out;
   int width_out;
 
-  Matrix weight;  // weight param, size=channel_in*h_kernel*w_kernel*channel_out
-  Vector bias;    // bias param, size = channel_out
+  Matrix weight;       // weight param, size=channel_in*h_kernel*w_kernel*channel_out
+  Vector bias;         // bias param, size = channel_out
   Matrix grad_weight;  // gradient w.r.t weight
   Vector grad_bias;    // gradient w.r.t bias
 
@@ -40,9 +40,8 @@ class Conv : public Layer {
   void init();
 
  public:
-  Conv(int channel_in, int height_in, int width_in, int channel_out,
-       int height_kernel, int width_kernel, int stride = 1, int pad_w = 0,
-       int pad_h = 0)
+  Conv(int channel_in, int height_in, int width_in, int channel_out, int height_kernel,
+       int width_kernel, int stride = 1, int pad_w = 0, int pad_h = 0)
       : dim_in(channel_in * height_in * width_in),
         channel_in(channel_in),
         height_in(height_in),
@@ -61,7 +60,9 @@ class Conv : public Layer {
   void update(Optimizer& opt);
   void im2col(const Vector& image, Matrix& data_col);
   void col2im(const Matrix& data_col, Vector& image);
-  int output_dim() { return dim_out; }
+  int output_dim() {
+    return dim_out;
+  }
   std::vector<float> get_parameters() const;
   std::vector<float> get_derivatives() const;
   void set_parameters(const std::vector<float>& param);
@@ -73,6 +74,7 @@ class Conv : public Layer {
   }
   void set_bias(const Vector& set_bias) {
     bias = set_bias;
+    cuda_conv.InitBiasParams(bias.data());
   }
   void non_cuda_forward(const Matrix& bottom) {
     use_cuda = false;
@@ -83,14 +85,17 @@ class Conv : public Layer {
   // load and save
   // TODO: move the implement to source file
   void serialize(std::ostream& stream) const {
-    stream.write(reinterpret_cast<const char*>(weight.data()), weight.rows() * weight.cols() * sizeof(Matrix::Scalar));    
-    stream.write(reinterpret_cast<const char*>(bias.data()), bias.rows() * bias.cols() * sizeof(Matrix::Scalar)); 
+    stream.write(reinterpret_cast<const char*>(weight.data()),
+                 weight.rows() * weight.cols() * sizeof(Matrix::Scalar));
+    stream.write(reinterpret_cast<const char*>(bias.data()),
+                 bias.rows() * bias.cols() * sizeof(Matrix::Scalar));
   }
   void deserialize(std::istream& stream) {
-    stream.read(reinterpret_cast<char*>(weight.data()), weight.rows() * weight.cols() * sizeof(Matrix::Scalar)); 
-    stream.read(reinterpret_cast<char*>(bias.data()), bias.rows() * bias.cols() * sizeof(Matrix::Scalar)); 
+    stream.read(reinterpret_cast<char*>(weight.data()),
+                weight.rows() * weight.cols() * sizeof(Matrix::Scalar));
+    stream.read(reinterpret_cast<char*>(bias.data()),
+                bias.rows() * bias.cols() * sizeof(Matrix::Scalar));
     cuda_conv.InitKernelParams(weight.data());
+    cuda_conv.InitBiasParams(bias.data());
   }
 };
-
-

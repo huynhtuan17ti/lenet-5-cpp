@@ -1,12 +1,12 @@
 #pragma once
 
-#include "cnn/network.h"
 #include "cnn/layer.h"
 #include "cnn/layer/conv.h"
 #include "cnn/layer/fully_connected.h"
 #include "cnn/layer/max_pooling.h"
 #include "cnn/layer/relu.h"
 #include "cnn/layer/softmax.h"
+#include "cnn/network.h"
 
 inline Network Lenet5() {
   Layer* conv1 = new Conv(1, 28, 28, 6, 5, 5);

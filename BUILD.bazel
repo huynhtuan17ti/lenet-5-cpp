@@ -1,3 +1,28 @@
+load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
+
+string_flag(
+    name = "conv_ver",
+    build_setting_default = "v3",
+)
+
+config_setting(
+    name = "conv_v3",
+    visibility = ["//visibility:public"],
+    flag_values = {
+        ":conv_ver": "v3",
+    },
+)
+
+config_setting(
+    name = "conv_v2",
+    visibility = ["//visibility:public"],
+    flag_values = {
+        ":conv_ver": "v2",
+    },
+)
+
+# ================= MAIN GOES HERE =========================
+
 cc_library(
   name = "header",
   hdrs = ["lenet5.h", "timer.h"],

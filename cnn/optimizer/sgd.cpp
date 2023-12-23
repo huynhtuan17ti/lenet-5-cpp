@@ -1,7 +1,6 @@
 #include "sgd.h"
 
-void SGD::update(Vector::AlignedMapType& w,
-                 Vector::ConstAlignedMapType& dw) {
+void SGD::update(Vector::AlignedMapType& w, Vector::ConstAlignedMapType& dw) {
   // refer to SGD in PyTorch:
   // https://github.com/pytorch/pytorch/blob/master/torch/optim/sgd.py
   // If v is zero, initialize it

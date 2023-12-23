@@ -23,10 +23,10 @@
 int main() {
   auto lenet5 = Lenet5();
 
-  Matrix random_matrix = Matrix::Random(28 * 28, 1); 
+  Matrix random_matrix = Matrix::Random(28 * 28, 1);
   std::cerr << random_matrix.cols() << " " << random_matrix.rows() << '\n';
   lenet5.forward(random_matrix);
-  
+
   lenet5.save("lenet5_weight");
 
   return 0;

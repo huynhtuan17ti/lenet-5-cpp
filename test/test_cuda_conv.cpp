@@ -21,18 +21,17 @@ TEST_CASE("Cuda conv layer", "[layer]") {
 
   Matrix input = Matrix::Random(channel_in * height_in * width_in, 1);
   //{
-    //auto tmp = input;
-    //tmp.resize(28, 28);
-    //Matrix x = tmp.block(0, 0, 5, 5);
-    //float res = 0;
-    //for(size_t i = 0; i < x.size(); ++i) {
-      //std::cerr << weight(i, 0) << " " << x(i) << '\n';
-      //res += x(i) * weight(i, 0);
-    //}
-    //res += bias(0);
-    //std::cerr << res << '\n';
+  //auto tmp = input;
+  //tmp.resize(28, 28);
+  //Matrix x = tmp.block(0, 0, 5, 5);
+  //float res = 0;
+  //for(size_t i = 0; i < x.size(); ++i) {
+  //std::cerr << weight(i, 0) << " " << x(i) << '\n';
+  //res += x(i) * weight(i, 0);
   //}
-
+  //res += bias(0);
+  //std::cerr << res << '\n';
+  //}
 
   conv.forward(input);
   Matrix cuda_output = conv.output();

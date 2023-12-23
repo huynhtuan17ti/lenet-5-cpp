@@ -1,11 +1,11 @@
-#include "cnn/utils.h"
 #include "conv.h"
 #include <math.h>
 #include <iostream>
+#include "cnn/utils.h"
 
 void Conv::init() {
   height_out = (1 + (height_in - height_kernel + 2 * pad_h) / stride);
-  width_out =   (1 + (width_in - width_kernel + 2 * pad_w) / stride);
+  width_out = (1 + (width_in - width_kernel + 2 * pad_w) / stride);
   dim_out = height_out * width_out * channel_out;
 
   weight.resize(channel_in * height_kernel * width_kernel, channel_out);
@@ -34,25 +34,23 @@ void Conv::im2col(const Vector& image, Matrix& data_col) {
   int hw_out = height_out * width_out;
   // im2col
   data_col.resize(hw_out, hw_kernel * channel_in);
-  for (int c = 0; c < channel_in; c ++) {
+  for (int c = 0; c < channel_in; c++) {
     Vector map = image.block(hw_in * c, 0, hw_in, 1);  // c-th channel map
-    for (int i = 0; i < hw_out; i ++) {
+    for (int i = 0; i < hw_out; i++) {
       int step_h = i / width_out;
       int step_w = i % width_out;
       int start_idx = step_h * width_in * stride + step_w * stride;  // left-top idx of window
-      for (int j = 0; j < hw_kernel; j ++) {
+      for (int j = 0; j < hw_kernel; j++) {
         int cur_col = start_idx % width_in + j % width_kernel - pad_w;  // col after padding
         int cur_row = start_idx / width_in + j / width_kernel - pad_h;
-        if (cur_col < 0 || cur_col >= width_in || cur_row < 0 ||
-            cur_row >= height_in) {
+        if (cur_col < 0 || cur_col >= width_in || cur_row < 0 || cur_row >= height_in) {
           data_col(i, c * hw_kernel + j) = 0;
-        }
-        else {
+        } else {
           //int pick_idx = start_idx + (j / width_kernel) * width_in + j % width_kernel;
           int pick_idx = cur_row * width_in + cur_col;
           //if (i == 0) {
-            //std::cerr << "debug cpu: " << j << " -- " << c * hw_kernel + j << " -> " << hw_in * c + pick_idx << '\n';
-            //std::cerr << "channel: " << c << '\n';
+          //std::cerr << "debug cpu: " << j << " -- " << c * hw_kernel + j << " -> " << hw_in * c + pick_idx << '\n';
+          //std::cerr << "channel: " << c << '\n';
           //}
           data_col(i, c * hw_kernel + j) = map(pick_idx);  // pick which pixel
         }
@@ -65,16 +63,21 @@ void Conv::forward(const Matrix& bottom) {
   int n_sample = bottom.cols();
   top.resize(height_out * width_out * channel_out, n_sample);
   data_cols.resize(n_sample);
-  for (int i = 0; i < n_sample; i++) {
-    if (use_cuda) {
+
+  if (use_cuda) {
+#if defined(CONV2)
+    for (int i = 0; i < n_sample; i++) {
       Matrix result;
       result.resize(height_out * width_out, channel_out);
-      cuda_conv.Launch(bottom.col(i).data(), result.data());
-      //std::cerr << "cuda: " << result.sum() << '\n';
-      //std::cerr << result(0) << '\n';
+      cuda_conv.LaunchOnOneSample(bottom.col(i).data(), result.data());
       result.rowwise() += bias.transpose();
       top.col(i) = Eigen::Map<Vector>(result.data(), result.size());
-    } else {
+    }
+#elif defined(CONV3)
+    cuda_conv.LaunchOnSamples(bottom.data(), top.data(), n_sample);
+#endif
+  } else {
+    for (int i = 0; i < n_sample; i++) {
       // im2col
       Matrix data_col;
       im2col(bottom.col(i), data_col);
@@ -84,8 +87,6 @@ void Conv::forward(const Matrix& bottom) {
       // weight has shape (hw_kernel * channel_in, channel_out)
       // therefore, data_col * weight = result, which has shape (hw_out, channel_out)
       Matrix result = data_col * weight;  // result: (hw_out, channel_out)
-      //std::cerr << "cpu: " << result.sum() << '\n';
-      //std::cerr << result(0) << '\n';
       result.rowwise() += bias.transpose();
       top.col(i) = Eigen::Map<Vector>(result.data(), result.size());
     }
@@ -102,19 +103,17 @@ void Conv::col2im(const Matrix& data_col, Vector& image) {
   // col2im
   image.resize(hw_in * channel_in);
   image.setZero();
-  for (int c = 0; c < channel_in; c ++) {
-    for (int i = 0; i < hw_out; i ++) {
+  for (int c = 0; c < channel_in; c++) {
+    for (int i = 0; i < hw_out; i++) {
       int step_h = i / width_out;
       int step_w = i % width_out;
       int start_idx = step_h * width_in * stride + step_w * stride;  // left-top idx of window
-      for (int j = 0; j < hw_kernel; j ++) {
+      for (int j = 0; j < hw_kernel; j++) {
         int cur_col = start_idx % width_in + j % width_kernel - pad_w;  // col after padding
         int cur_row = start_idx / width_in + j / width_kernel - pad_h;
-        if (cur_col < 0 || cur_col >= width_in || cur_row < 0 ||
-            cur_row >= height_in) {
+        if (cur_col < 0 || cur_col >= width_in || cur_row < 0 || cur_row >= height_in) {
           continue;
-        }
-        else {
+        } else {
           //int pick_idx = start_idx + (j / width_kernel) * width_in + j % width_kernel;
           int pick_idx = cur_row * width_in + cur_col;
           image(c * hw_in + pick_idx) += data_col(i, c * hw_kernel + j);  // pick which pixel
@@ -130,11 +129,11 @@ void Conv::backward(const Matrix& bottom, const Matrix& grad_top) {
   grad_bias.setZero();
   grad_bottom.resize(height_in * width_in * channel_in, n_sample);
   grad_bottom.setZero();
-  for (int i = 0; i < n_sample; i ++) {
+  for (int i = 0; i < n_sample; i++) {
     // im2col of grad_top
     Matrix grad_top_i = grad_top.col(i);
-    Matrix grad_top_i_col = Eigen::Map<Matrix>(grad_top_i.data(),
-                              height_out * width_out, channel_out);
+    Matrix grad_top_i_col =
+        Eigen::Map<Matrix>(grad_top_i.data(), height_out * width_out, channel_out);
     // d(L)/d(w) = \sum{ d(L)/d(z_i) * d(z_i)/d(w) }
     grad_weight += data_cols[i].transpose() * grad_top_i_col;
     // d(L)/d(b) = \sum{ d(L)/d(z_i) * d(z_i)/d(b) }
@@ -167,8 +166,8 @@ std::vector<float> Conv::get_parameters() const {
 }
 
 void Conv::set_parameters(const std::vector<float>& param) {
-  if(static_cast<int>(param.size()) != weight.size() + bias.size())
-      throw std::invalid_argument("Parameter size does not match");
+  if (static_cast<int>(param.size()) != weight.size() + bias.size())
+    throw std::invalid_argument("Parameter size does not match");
   std::copy(param.begin(), param.begin() + weight.size(), weight.data());
   std::copy(param.begin() + weight.size(), param.end(), bias.data());
 }

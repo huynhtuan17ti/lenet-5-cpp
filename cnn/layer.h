@@ -20,19 +20,11 @@ class Layer {
   virtual const Matrix& output() { return top; }
   virtual const Matrix& back_gradient() { return grad_bottom; }
   virtual int output_dim() { return -1; }
-  virtual std::vector<float> get_parameters() const {
-    return std::vector<float>();
-  }
-  virtual std::vector<float> get_derivatives() const {
-    return std::vector<float>();
-  }
+  virtual std::vector<float> get_parameters() const { return std::vector<float>(); }
+  virtual std::vector<float> get_derivatives() const { return std::vector<float>(); }
   virtual void set_parameters(const std::vector<float>& param) {}
 
   // read/write binary
-  virtual void serialize(std::ostream& stream) const {
-    return;
-  }
-  virtual void deserialize(std::istream& stream) {
-    return;
-  }
+  virtual void serialize(std::ostream& stream) const { return; }
+  virtual void deserialize(std::istream& stream) { return; }
 };
