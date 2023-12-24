@@ -9,7 +9,7 @@
 #include "cnn/network.h"
 #include "cnn/optimizer/sgd.h"
 #include "cnn/utils.h"
-#include "lenet5.h"
+#include "include/lenet5.h"
 
 int main() {
   Network lenet5 = Lenet5();

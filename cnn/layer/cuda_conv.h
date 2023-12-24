@@ -1,10 +1,13 @@
 #pragma once
 #include <cstdint>
 #include <iostream>
+#include <cuda_runtime.h>
+
+const size_t N_STREAMS = 16;
 
 class CudaConv {
  public:
-  CudaConv() {}
+  CudaConv();
 
   ~CudaConv();
 
@@ -29,4 +32,5 @@ class CudaConv {
 
   float* d_kernel_;
   float* d_bias_;
+  cudaStream_t streams_[N_STREAMS];
 };

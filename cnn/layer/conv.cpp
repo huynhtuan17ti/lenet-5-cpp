@@ -65,12 +65,11 @@ void Conv::forward(const Matrix& bottom) {
   data_cols.resize(n_sample);
 
   if (use_cuda) {
-#if defined(CONV2)
+#if defined(CONV2) || defined(CONV1)
     for (int i = 0; i < n_sample; i++) {
       Matrix result;
       result.resize(height_out * width_out, channel_out);
       cuda_conv.LaunchOnOneSample(bottom.col(i).data(), result.data());
-      result.rowwise() += bias.transpose();
       top.col(i) = Eigen::Map<Vector>(result.data(), result.size());
     }
 #elif defined(CONV3)

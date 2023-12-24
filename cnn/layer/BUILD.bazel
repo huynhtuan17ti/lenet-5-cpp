@@ -7,7 +7,12 @@ cuda_library(
   deps = [
     "//cnn:cnn_basic",
     "@eigen",
-  ]
+  ],
+  defines = select({
+    "//:conv_v3" : ["CONV3"],
+    "//:conv_v2" : ["CONV2"],
+    "//:conv_v1" : ["CONV1"],
+  }),
 )
 
 cc_library(
@@ -19,9 +24,10 @@ cc_library(
     "@eigen",
     "//cnn:cnn_basic",
   ],
-  local_defines = select({
+  defines = select({
     "//:conv_v3" : ["CONV3"],
     "//:conv_v2" : ["CONV2"],
+    "//:conv_v1" : ["CONV1"],
   }),
   visibility = ["//visibility:public"],
 )

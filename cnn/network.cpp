@@ -1,4 +1,5 @@
 #include "network.h"
+#include "timer.h"
 
 void Network::save(const std::string& filename) {
   std::ofstream file(filename, std::ios::binary);
@@ -24,6 +25,23 @@ void Network::load(const std::string& filename) {
   } else {
     std::cerr << "Unable to open file: " << filename << std::endl;
   }
+}
+
+void Network::timer_forward(const Matrix& input) {
+  if (layers.empty())
+    return;
+  Timer timer;
+  timer.Tick();
+  layers[0]->forward(input);
+  timer.Tock();
+  timer.Record();
+  for (size_t i = 1; i < layers.size(); i++) {
+    timer.Tick();
+    layers[i]->forward(layers[i - 1]->output());
+    timer.Tock();
+    timer.Record();
+  }
+  timer.Report();
 }
 
 void Network::forward(const Matrix& input) {

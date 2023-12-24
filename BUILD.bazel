@@ -21,11 +21,19 @@ config_setting(
     },
 )
 
+config_setting(
+  name = "conv_v1",
+  visibility = ["//visibility:public"],
+  flag_values = {
+    ":conv_ver": "v1",
+  },
+)
+
 # ================= MAIN GOES HERE =========================
 
 cc_library(
   name = "header",
-  hdrs = ["lenet5.h", "timer.h"],
+  hdrs = glob(["include/*.h"]),
   deps = [
     "//cnn:cnn",
   ]

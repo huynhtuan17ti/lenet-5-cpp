@@ -30,6 +30,7 @@ class Network {
   void add_layer(Layer* layer) { layers.push_back(layer); }
   void add_loss(Loss* loss_in) { loss = loss_in; }
 
+  void timer_forward(const Matrix& input);
   void forward(const Matrix& input);
   void backward(const Matrix& input, const Matrix& target);
   void update(Optimizer& opt);
