@@ -9,9 +9,9 @@
 #include "cnn/mnist.h"
 #include "cnn/network.h"
 #include "cnn/optimizer/sgd.h"
+#include "cnn/timer.h"
 #include "cnn/utils.h"
 #include "include/lenet5.h"
-#include "cnn/timer.h"
 
 int main() {
   Network lenet5 = Lenet5();

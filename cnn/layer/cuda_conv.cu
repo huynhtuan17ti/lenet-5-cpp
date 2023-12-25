@@ -18,7 +18,7 @@ const dim3 BLOCK_SIZE(4, 4, 4);
 // ================================= MINOR METHODS ==========================================
 
 CudaConv::CudaConv() {
-  for(size_t i = 0; i < N_STREAMS; ++i) {
+  for (size_t i = 0; i < N_STREAMS; ++i) {
     CHECK(cudaStreamCreate(&streams_[i]));
   }
 }
@@ -27,7 +27,7 @@ CudaConv::~CudaConv() {
   CHECK(cudaFree(d_kernel_));
   CHECK(cudaFree(d_bias_));
 
-  for(size_t i = 0; i < N_STREAMS; ++i) {
+  for (size_t i = 0; i < N_STREAMS; ++i) {
     CHECK(cudaStreamSynchronize(streams_[i]));
     CHECK(cudaStreamDestroy(streams_[i]));
   }
@@ -69,10 +69,9 @@ void CudaConv::SetOutMatrix(size_t channel_out, size_t width_out, size_t height_
 // ================================= CONV MAIN METHODS ==========================================
 
 __global__ void conv_kernel_v1(float* in_matrix, size_t in_channel, size_t in_width,
-                               size_t in_height, float* kernel, int kernel_size, 
-                               float* bias,
-                               float* out_matrix,
-                               size_t out_channel, size_t out_width, size_t out_height) {
+                               size_t in_height, float* kernel, int kernel_size, float* bias,
+                               float* out_matrix, size_t out_channel, size_t out_width,
+                               size_t out_height) {
   size_t out_row = blockIdx.y * blockDim.y + threadIdx.y;
   size_t out_col = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -105,10 +104,9 @@ __global__ void conv_kernel_v1(float* in_matrix, size_t in_channel, size_t in_wi
 }
 
 __global__ void conv_kernel_v2(float* in_matrix, size_t in_channel, size_t in_width,
-                               size_t in_height, float* kernel, int kernel_size, 
-                               float* bias,
-                               float* out_matrix,
-                               size_t out_channel, size_t out_width, size_t out_height) {
+                               size_t in_height, float* kernel, int kernel_size, float* bias,
+                               float* out_matrix, size_t out_channel, size_t out_width,
+                               size_t out_height) {
 
   const size_t INPUT_HW = in_width * in_height;
   const size_t KERNEL_HW = kernel_size * kernel_size;
@@ -272,9 +270,9 @@ void CudaConv::LaunchOnOneSample(const float* in_matrix, float* out_matrix) {
   dim3 grid_size((width_out_ - 1) / BLOCK_SIZE.x + 1, (height_out_ - 1) / BLOCK_SIZE.y + 1);
 
 #ifdef CONV1
-  conv_kernel_v1<<<grid_size, BLOCK_SIZE>>>(d_in, channel_in_, width_in_, height_in_,
-  d_kernel_, kernel_size_, d_bias_,
-  d_out, channel_out_, width_out_, height_out_);
+  conv_kernel_v1<<<grid_size, BLOCK_SIZE>>>(d_in, channel_in_, width_in_, height_in_, d_kernel_,
+                                            kernel_size_, d_bias_, d_out, channel_out_, width_out_,
+                                            height_out_);
 #else
   size_t shared_size = channel_in_ * (kernel_size_ - 1 + BLOCK_SIZE.x) *
                        (kernel_size_ - 1 + BLOCK_SIZE.y) * sizeof(float);
@@ -310,30 +308,32 @@ void CudaConv::LaunchOnSamples(const float* in_matrix, float* out_matrix, size_t
   CHECK(cudaMalloc(&d_out, output_byte_size));
 
   // using streams
-  int stream_size = n_sample / N_STREAMS; 
+  int stream_size = n_sample / N_STREAMS;
   int bonus_stream_index = n_sample % N_STREAMS;
   size_t in_offset = 0, out_offset = 0;
   size_t in_sample_size = channel_in_ * width_in_ * height_in_;
   size_t out_sample_size = channel_out_ * width_out_ * height_out_;
-  for(size_t i_stream = 0; i_stream < N_STREAMS; ++i_stream) {
+  for (size_t i_stream = 0; i_stream < N_STREAMS; ++i_stream) {
     size_t actual_stream_size = stream_size + (i_stream < bonus_stream_index);
-    if (actual_stream_size == 0) continue;
+    if (actual_stream_size == 0)
+      continue;
     size_t in_stream_bytes = actual_stream_size * in_sample_size * sizeof(float);
     size_t out_stream_bytes = actual_stream_size * out_sample_size * sizeof(float);
-    CHECK(cudaMemcpyAsync(&d_in[in_offset], &in_matrix[in_offset], in_stream_bytes, cudaMemcpyHostToDevice, streams_[i_stream]));
+    CHECK(cudaMemcpyAsync(&d_in[in_offset], &in_matrix[in_offset], in_stream_bytes,
+                          cudaMemcpyHostToDevice, streams_[i_stream]));
 
     dim3 grid_size((width_out_ - 1) / BLOCK_SIZE.x + 1, (height_out_ - 1) / BLOCK_SIZE.y + 1,
                    (actual_stream_size - 1) / BLOCK_SIZE.z + 1);
 
     size_t shared_size = BLOCK_SIZE.z * channel_in_ * (kernel_size_ - 1 + BLOCK_SIZE.x) *
-                        (kernel_size_ - 1 + BLOCK_SIZE.y) * sizeof(float);
+                         (kernel_size_ - 1 + BLOCK_SIZE.y) * sizeof(float);
     // call kernel
     conv_kernel_v3<<<grid_size, BLOCK_SIZE, shared_size, streams_[i_stream]>>>(
-                            actual_stream_size, &d_in[in_offset], channel_in_, width_in_, height_in_, 
-                            d_kernel_, kernel_size_, d_bias_, 
-                            &d_out[out_offset], channel_out_, width_out_, height_out_);
+        actual_stream_size, &d_in[in_offset], channel_in_, width_in_, height_in_, d_kernel_,
+        kernel_size_, d_bias_, &d_out[out_offset], channel_out_, width_out_, height_out_);
 
-    CHECK(cudaMemcpyAsync(&out_matrix[out_offset], &d_out[out_offset], out_stream_bytes, cudaMemcpyDeviceToHost, streams_[i_stream]));
+    CHECK(cudaMemcpyAsync(&out_matrix[out_offset], &d_out[out_offset], out_stream_bytes,
+                          cudaMemcpyDeviceToHost, streams_[i_stream]));
     in_offset += actual_stream_size * in_sample_size;
     out_offset += actual_stream_size * out_sample_size;
   }

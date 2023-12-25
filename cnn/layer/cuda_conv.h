@@ -1,7 +1,7 @@
 #pragma once
+#include <cuda_runtime.h>
 #include <cstdint>
 #include <iostream>
-#include <cuda_runtime.h>
 
 const size_t N_STREAMS = 16;
 

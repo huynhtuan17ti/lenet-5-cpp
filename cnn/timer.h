@@ -1,8 +1,8 @@
 #pragma once
 #include <chrono>
-#include <vector>
-#include <string>
 #include <iostream>
+#include <string>
+#include <vector>
 #include "VariadicTable.h"
 
 class Timer {
@@ -29,9 +29,9 @@ class Timer {
   }
 
   void Report() const {
-    VariadicTable<std::string, int64_t> vt({"Network", "Elapsed Time (ms)"}, 10); 
-    for(size_t i = 0; i < stats.size(); ++i) {
-      vt.addRow("Layer " + std::to_string(i+1), stats[i]);
+    VariadicTable<std::string, int64_t> vt({"Network", "Elapsed Time (ms)"}, 10);
+    for (size_t i = 0; i < stats.size(); ++i) {
+      vt.addRow("Layer " + std::to_string(i + 1), stats[i]);
     }
     vt.print(std::cout);
   }

@@ -3,6 +3,7 @@ common --color=yes
 
 build --verbose_failures
 
+build:report --copt=-w
 build --spawn_strategy=local
 build --strategy=Genrule=local
 
