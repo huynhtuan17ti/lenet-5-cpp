@@ -331,6 +331,8 @@ void CudaConv::LaunchOnSamples(const float* in_matrix, float* out_matrix, size_t
     conv_kernel_v3<<<grid_size, BLOCK_SIZE, shared_size, streams_[i_stream]>>>(
         actual_stream_size, &d_in[in_offset], channel_in_, width_in_, height_in_, d_kernel_,
         kernel_size_, d_bias_, &d_out[out_offset], channel_out_, width_out_, height_out_);
+    CHECK(cudaDeviceSynchronize());
+    CHECK(cudaGetLastError());
 
     CHECK(cudaMemcpyAsync(&out_matrix[out_offset], &d_out[out_offset], out_stream_bytes,
                           cudaMemcpyDeviceToHost, streams_[i_stream]));

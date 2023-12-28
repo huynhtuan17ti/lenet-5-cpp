@@ -1,6 +1,6 @@
 
 /*
- * Train model with Fashion MNIST
+ * Evaluate model with Fashion MNIST test set
  * */
 #include <Eigen/Dense>
 

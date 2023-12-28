@@ -11,6 +11,7 @@ Lenet with cpp implementation
 ```sh
 # inference
 bazel run //:inference # cpu
+bazel run //:inference --config=cuda --//:conv_ver=v1 # cuda, using conv v1
 bazel run //:inference --config=cuda --//:conv_ver=v2 # cuda, using conv v2
 bazel run //:inference --config=cuda --//:conv_ver=v3 # cuda, using conv v3 (default)
 
