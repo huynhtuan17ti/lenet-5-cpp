@@ -22,7 +22,8 @@ bazel run //test:test --config=cuda --//:conv_ver=<ver>
 
 ## Cuda optimization
 There are 3 versions of cuda optimization:
-~~~~~ so lazy to write :sleeping: ~~~~~~
+
+..... so lazy to write :sleeping: .....
 
 ## Reference
 - [mini-dnn-cpp](https://github.com/iamhankai/mini-dnn-cpp)
