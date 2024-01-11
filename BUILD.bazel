@@ -69,8 +69,8 @@ cc_binary(
 )
 
 cc_binary(
-  name = "inference",
-  srcs = ["inference.cpp"],
+  name = "evaluate",
+  srcs = ["evaluate.cpp"],
   data = [":fashion_mnist_data", ":lenet5_weight"],
   deps = [
     "//cnn:cnn",
